@@ -10,6 +10,8 @@ export const usePatchBlock = () => {
   const [status, setStatus] = React.useState('');
 
   const patchBlock = async (block: Block) => {
+    setStatus('Loading');
+    
     if (!block.id) {
       return;
     }
@@ -20,13 +22,18 @@ export const usePatchBlock = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(block),
       })
-        .then((res) => {
-          return res.json()
-        })
+      .then(result => {
+        if (result.ok) {
+          return result.json()
+        }
 
-      setStatus(response?.id && 'Success')
+        throw new Error('failed to patch')      
+      });
+       
+      setStatus(response?.id && 'Success' )
     } catch (err) {
-      console.log({ err });
+      console.log(err.message);
+      setStatus('Fail')
     }
 
   }

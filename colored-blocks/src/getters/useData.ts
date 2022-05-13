@@ -18,11 +18,11 @@ import * as React from 'react';
        setLoading(true);
        const response = await fetch(url)
          .then(result => {
-           if (result.status !== 200) {
-             const erronious = result.status;
-             return Promise.reject(erronious);
+           if (result.ok) {
+            return result.json()
            }
-           return result.json()
+
+           throw new Error('failed to fetch')
          });
 
        setData(response);
@@ -41,6 +41,7 @@ import * as React from 'react';
 
    React.useEffect(() => {
      fetchData();
+
      if (shouldRefetch) {
        const interval = setInterval(() => {
          fetchData()
@@ -48,6 +49,7 @@ import * as React from 'react';
        }, 30000);
        return () => clearInterval(interval);
      }
+     
    }, [url, shouldRefetch]);
 
    return { data, error, loading, fetchData }
