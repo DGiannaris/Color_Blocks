@@ -4,6 +4,12 @@ import { usePatchBlock } from '../setters/usePatchBlock.ts';
 import { getRandomColor } from '../utils/getRandomColor.ts';
 import { Block } from '../common/types.ts';
 
+/**
+ * The main component of the assignment
+ * It renders the blocks, uses the custom hooks to fetch/patch
+ * and handles the local state to color change blocks
+ * @returns {React.ReactElement}
+ */
 export const Dashboard = () => {
   const [newColor, setNewColor] = React.useState('');
   const [availableBlocks, setAvailableBlocks] = React.useState<Block[] | []>();
