@@ -3,6 +3,8 @@ import { useData } from '../getters/useData.ts';
 import { usePatchBlock } from '../setters/usePatchBlock.ts';
 import { getRandomColor } from '../utils/getRandomColor.ts';
 import { Block } from '../common/types.ts';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 /**
  * The main component of the assignment
@@ -20,16 +22,18 @@ export const Dashboard = () => {
     loading: isBlocksLoading,
     error: blocksError,
     fetchData: fetchBlocks,
-  } = useData(`/api/blocks`, true);
+  } = useData(`/api/blocks`, true, 30000);
 
   const { data: colorPool = [] } = useData(`/api/colors`);
 
   const { patchBlock, status } = usePatchBlock();
 
   React.useEffect(() => {
-    patchBlock({ ...clickedBlock, color: newColor });
-    fetchBlocks();
-  }, [newColor, clickedBlock]);
+    if(clickedBlock?.id){
+      patchBlock({ ...clickedBlock, color: newColor });
+      fetchBlocks();
+    }
+  }, [clickedBlock]);
 
   React.useEffect(() => {
     // Sync local blocks with remote blocks
@@ -39,18 +43,30 @@ export const Dashboard = () => {
     }
   }, [blocks]);
 
+  React.useEffect(() => {
+    switch (status) {
+      case 'Success':
+        toast.success(`${status}`, { position: toast.POSITION.TOP_CENTER });
+        break;
+      case 'Fail':
+        toast.error(`${status}`, { position: toast.POSITION.TOP_CENTER });
+        break;
+    }
+  }, [status]);
+
   return (
     <>
+     <ToastContainer autoClose={500} />
       {
-        <ul style={{ listStyleType: 'none' }}>
+        <ul style={{ listStyleType: 'none', marginLeft: -40 }}>
           {availableBlocks?.map(({ name, id, color }) => {
             return (
               <li
                 key={id}
                 style={{
                   backgroundColor: `${color}`,
-                  width: 30,
-                  height: 30,
+                  width: 40,
+                  height: 40,
                   cursor: 'pointer',
                   borderRadius: 8,
                   userSelect: 'none',
@@ -72,10 +88,7 @@ export const Dashboard = () => {
                   setAvailableBlocks([...colorChangedAvailableBlocks]);
                 }}
               >
-                <p
-                  key={id}
-                  style={{ color: 'white', textAlign: 'center', lineHeight: 2 }}
-                >
+                <p key={id} style={{ color: 'white', textAlign: 'center', lineHeight: 2.5 }}>
                   {name}
                 </p>
               </li>
