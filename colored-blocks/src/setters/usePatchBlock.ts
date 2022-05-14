@@ -13,24 +13,26 @@ export const usePatchBlock = () => {
     setStatus('Loading');
     
     if (!block.id) {
+      setStatus('Fail')
       return;
     }
 
     try {
-      const response = await fetch(`/api/blocks/${block.id}`, {
+      await fetch(`/api/blocks/${block.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(block),
       })
       .then(result => {
         if (result.ok) {
+          setStatus('Success')
           return result.json()
         }
 
         throw new Error('failed to patch')      
       });
        
-      setStatus(response?.id && 'Success' )
+     
     } catch (err) {
       console.log(err.message);
       setStatus('Fail')
