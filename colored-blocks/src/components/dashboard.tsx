@@ -13,23 +13,26 @@ import 'react-toastify/dist/ReactToastify.css';
  * @returns {React.ReactElement}
  */
 export const Dashboard = () => {
+  // states
   const [newColor, setNewColor] = React.useState('');
   const [availableBlocks, setAvailableBlocks] = React.useState<Block[] | []>();
   const [clickedBlock, setClickedBlock] = React.useState<Block | undefined>();
 
+  // fetches
   const {
     data: blocks = [],
     loading: isBlocksLoading,
     error: blocksError,
     fetchData: fetchBlocks,
   } = useData(`/api/blocks`, true, 30000);
-
   const { data: colorPool = [] } = useData(`/api/colors`);
 
+  // patch function
   const { patchBlock, status } = usePatchBlock();
 
+  // state handling
   React.useEffect(() => {
-    if(clickedBlock?.id){
+    if (clickedBlock?.id) {
       patchBlock({ ...clickedBlock, color: newColor });
       fetchBlocks();
     }
@@ -54,11 +57,31 @@ export const Dashboard = () => {
     }
   }, [status]);
 
+  // on click logic
+  const onClickHandler = (clickedBlock: Block) => {
+    const { id, name, color } = clickedBlock;
+    const maybeNewColor = getRandomColor(color, colorPool);
+
+    setClickedBlock({ id, name, color });
+    setNewColor(maybeNewColor);
+
+    const newavailableBlocks = [...availableBlocks]; // immutability
+
+    const colorChangedAvailableBlocks = newavailableBlocks.map((block) => {
+      if (block.id === id) {
+        block.color = maybeNewColor;
+      }
+      return block;
+    });
+
+    setAvailableBlocks([...colorChangedAvailableBlocks]);
+  };
+
   return (
     <>
-     <ToastContainer autoClose={500} />
+      <ToastContainer autoClose={1000} />
       {
-        <ul style={{ listStyleType: 'none', marginLeft: -40 }}>
+        <ul style={{ listStyleType: "none", marginLeft: -40 }}>
           {availableBlocks?.map(({ name, id, color }) => {
             return (
               <li
@@ -67,28 +90,20 @@ export const Dashboard = () => {
                   backgroundColor: `${color}`,
                   width: 40,
                   height: 40,
-                  cursor: 'pointer',
+                  cursor: "pointer",
                   borderRadius: 8,
-                  userSelect: 'none',
+                  userSelect: "none",
                 }}
-                onClick={() => {
-                  const maybeNewColor = getRandomColor(color, colorPool);
-                  setClickedBlock({ id, name, color });
-                  setNewColor(maybeNewColor);
-                  const newavailableBlocks = [...availableBlocks];
-                  const colorChangedAvailableBlocks = newavailableBlocks.map(
-                    (block) => {
-                      if (block.id === id) {
-                        block.color = maybeNewColor;
-                      }
-                      return block;
-                    }
-                  );
-
-                  setAvailableBlocks([...colorChangedAvailableBlocks]);
-                }}
+                onClick={() => onClickHandler({ id, name, color })}
               >
-                <p key={id} style={{ color: 'white', textAlign: 'center', lineHeight: 2.5 }}>
+                <p
+                  key={id}
+                  style={{
+                    color: "white",
+                    textAlign: "center",
+                    lineHeight: 2.5,
+                  }}
+                >
                   {name}
                 </p>
               </li>
